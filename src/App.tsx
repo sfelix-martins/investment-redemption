@@ -12,11 +12,11 @@ declare const global: { HermesInternal: null | {} };
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <PaperProvider theme={theme}>
+    <PaperProvider theme={theme}>
+      <NavigationContainer>
         <AppRoutes />
-      </PaperProvider>
-    </NavigationContainer>
+      </NavigationContainer>
+    </PaperProvider>
   );
 };
 

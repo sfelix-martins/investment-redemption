@@ -7,7 +7,7 @@ import { RootStackParamList } from '../../routes/AppRoutes';
 import { List, Title } from 'react-native-paper';
 import CurrencyText from '../../components/CurrencyText/CurrencyText';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-import { Invesment } from '../../api/entities';
+import { useInvestments } from '../../hooks/useInvestments/useInvestments';
 
 type InvestmentsScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -19,34 +19,7 @@ type Props = {
 };
 
 function Investments({ navigation }: Props) {
-  const investments: Invesment[] = [
-    {
-      goal: 'Aposentadoria',
-      inGracePeriod: false,
-      name: 'Investimento I',
-      totalBalance: 1000,
-      stocks: [
-        {
-          id: '1',
-          percentage: 50,
-          symbol: 'BBSA3',
-        },
-      ],
-    },
-    {
-      goal: 'Aposentadoria',
-      inGracePeriod: false,
-      name: 'Investimento II',
-      totalBalance: 1000000,
-      stocks: [
-        {
-          id: '1',
-          percentage: 50,
-          symbol: 'BBSA3',
-        },
-      ],
-    },
-  ];
+  const { data: investments } = useInvestments();
 
   return (
     <View>
