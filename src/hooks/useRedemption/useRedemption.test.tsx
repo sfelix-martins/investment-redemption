@@ -96,7 +96,7 @@ describe('setStockamountToRedeem', () => {
     );
   });
 
-  it('should set an error and remove the stock redemption when amount to redeem is greater than stock balance', () => {
+  it('should set an error when amount to redeem is greater than stock balance', () => {
     const { result } = renderHook(() => useRedemption());
 
     const stock: Stock = {
@@ -115,11 +115,9 @@ describe('setStockamountToRedeem', () => {
     expect(result.current.getStockError(stock)).toBe(
       'Valor não pode ser maior que R$ 100,00',
     );
-    expect(result.current.stockRedemptions[stock.id]).toBeUndefined();
-    expect(result.current.totalValue).toBe(0);
   });
 
-  it('should set an error and remove the wrong stock redemption when amount to redeem is greater than stock balance and has more than one stock redemption', () => {
+  it('should set an error when amount to redeem is greater than stock balance and has more than one stock redemption', () => {
     const { result } = renderHook(() => useRedemption());
 
     const stock: Stock = {
@@ -129,7 +127,7 @@ describe('setStockamountToRedeem', () => {
       percentage: 0,
     };
     const validAmountToRedeem = 100;
-    const greatedThanBalanceAmountToRedeem = 101;
+    const greaterThanBalanceAmountToRedeem = 101;
 
     const anotherStock: Stock = {
       id: '4321',
@@ -143,7 +141,7 @@ describe('setStockamountToRedeem', () => {
       result.current.setStockAmountToRedeem(stock, validAmountToRedeem);
       result.current.setStockAmountToRedeem(
         stock,
-        greatedThanBalanceAmountToRedeem,
+        greaterThanBalanceAmountToRedeem,
       );
       result.current.setStockAmountToRedeem(
         anotherStock,
@@ -154,9 +152,10 @@ describe('setStockamountToRedeem', () => {
     expect(result.current.getStockError(stock)).toBe(
       'Valor não pode ser maior que R$ 100,00',
     );
-    expect(result.current.stockRedemptions[stock.id]).toBeUndefined();
     expect(result.current.stockRedemptions[anotherStock.id]).toBeDefined();
-    expect(result.current.totalValue).toBe(validAnotherAmountToRedeem);
+    expect(result.current.totalValue).toBe(
+      validAnotherAmountToRedeem + greaterThanBalanceAmountToRedeem,
+    );
   });
 
   it('should remove error when value is correct', () => {
@@ -178,8 +177,6 @@ describe('setStockamountToRedeem', () => {
     expect(result.current.getStockError(stock)).toBe(
       'Valor não pode ser maior que R$ 100,00',
     );
-    expect(result.current.stockRedemptions[stock.id]).toBeUndefined();
-    expect(result.current.totalValue).toBe(0);
 
     const newValidamountToRedeem = 100;
     act(() => {

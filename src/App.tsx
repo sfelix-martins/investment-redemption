@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { theme } from './config/theme';
 import AppRoutes from './routes/AppRoutes';
+import { DialogProvider } from './contexts/DialogContext/DialogContext';
 
 declare const global: { HermesInternal: null | {} };
 
@@ -16,7 +17,9 @@ const App = () => {
     <PaperProvider theme={theme}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <AppRoutes />
+          <DialogProvider>
+            <AppRoutes />
+          </DialogProvider>
         </NavigationContainer>
       </SafeAreaProvider>
     </PaperProvider>

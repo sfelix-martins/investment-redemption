@@ -44,6 +44,7 @@ interface UseRedemptionApi {
   getStockRedemptionValue(stock: Stock): number | undefined;
   hasErrorOnStock(stock: Stock): boolean;
   getStockError(stock: Stock): ErrorMessage;
+  stockRedemptions: StockRedemptions;
   redeem(
     investment: Investment,
   ): Either<
@@ -151,6 +152,7 @@ export default function useRedemption(): UseRedemptionApi {
 
   return {
     totalValue,
+    stockRedemptions,
     setStockAmountToRedeem,
     getStockRedemptionValue,
     hasErrorOnStock,

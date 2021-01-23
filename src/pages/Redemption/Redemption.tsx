@@ -1,16 +1,16 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import CurrencyInput from 'react-native-currency-input';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import CurrencyInput from 'react-native-currency-input';
 
 import { RouteProp } from '@react-navigation/native';
 
 import CurrencyText from '../../components/CurrencyText/CurrencyText';
-import Dialog from '../../components/Dialog/Dialog';
 import LabelValueItem from '../../components/LabelValueItem/LabelValueItem';
 import SectionTitle from '../../components/SectionTitle/SectionTitle';
+import { useDialog } from '../../contexts/DialogContext/DialogContext';
 import useRedemption from '../../hooks/useRedemption/useRedemption';
 import { RootStackParamList } from '../../routes/AppRoutes';
 
@@ -31,8 +31,7 @@ function Redemption({ route }: Props) {
     getStockRedemptionValue,
   } = useRedemption();
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { showErrorDialog, showSuccessDialog } = useDialog();
 
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
@@ -41,108 +40,109 @@ function Redemption({ route }: Props) {
     const redeemedOrError = redeem(investment);
 
     if (redeemedOrError.isLeft()) {
-      setErrorMessage(redeemedOrError.value.message);
+      showErrorDialog({
+        message: redeemedOrError.value.message,
+      });
       return;
     }
 
-    setSuccessMessage(redeemedOrError.value.message);
-  }, [investment, redeem]);
+    showSuccessDialog({
+      message: redeemedOrError.value.message,
+      actionText: 'Novo resgate',
+      title: 'Resgate Efetuado!',
+    });
+  }, [investment, redeem, showErrorDialog, showSuccessDialog]);
 
   return (
-    <View
-      style={{
-        paddingBottom: insets.bottom + FIXED_BUTTON_HEIGHT,
-        backgroundColor: colors.primary,
-      }}>
-      <ScrollView style={{ backgroundColor: colors.background }}>
-        <SectionTitle>Dados do investimento</SectionTitle>
-        <LabelValueItem label="Nome" value={investment.name} />
-        <LabelValueItem
-          label="Saldo total disponível"
-          value={
-            <CurrencyText withSymbol>{investment.totalBalance}</CurrencyText>
-          }
-        />
-        <SectionTitle>Resgate do seu jeito</SectionTitle>
-        <View style={styles.mb16}>
-          {investment.stocks.map((stock) => (
-            <View key={stock.id} style={styles.mb16}>
-              <LabelValueItem label="Ação" value={stock.symbol} />
-              <LabelValueItem
-                label="Saldo acumulado"
-                value={<CurrencyText withSymbol>{stock.balance}</CurrencyText>}
-              />
-              <TextInput
-                style={styles.input}
-                theme={{
-                  colors: {
-                    primary: colors.accent,
-                  },
-                }}
-                error={hasErrorOnStock(stock)}
-                accessibilityComponentType
-                accessibilityTraits
-                label="Valor a resgatar"
-                render={(props) => (
-                  <CurrencyInput
-                    {...props}
-                    onChangeValue={(value: number) => {
-                      setStockAmountToRedeem(stock, value);
-                    }}
-                    value={getStockRedemptionValue(stock) ?? 0}
-                    unit="R$ "
-                    delimiter="."
-                    separator=","
-                    precision={2}
-                  />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.select({
+        ios: 60,
+        android: 0,
+      })}>
+      <View
+        style={{
+          paddingBottom: insets.bottom + FIXED_BUTTON_HEIGHT,
+          backgroundColor: colors.primary,
+        }}>
+        <ScrollView style={{ backgroundColor: colors.background }}>
+          <SectionTitle>Dados do investimento</SectionTitle>
+          <LabelValueItem label="Nome" value={investment.name} />
+          <LabelValueItem
+            label="Saldo total disponível"
+            value={
+              <CurrencyText withSymbol>{investment.totalBalance}</CurrencyText>
+            }
+          />
+          <SectionTitle>Resgate do seu jeito</SectionTitle>
+          <View style={styles.mb16}>
+            {investment.stocks.map((stock) => (
+              <View key={stock.id} style={styles.mb16}>
+                <LabelValueItem label="Ação" value={stock.symbol} />
+                <LabelValueItem
+                  label="Saldo acumulado"
+                  value={
+                    <CurrencyText withSymbol>{stock.balance}</CurrencyText>
+                  }
+                />
+                <TextInput
+                  style={styles.input}
+                  theme={{
+                    colors: {
+                      primary: colors.accent,
+                    },
+                  }}
+                  error={hasErrorOnStock(stock)}
+                  accessibilityComponentType
+                  accessibilityTraits
+                  label="Valor a resgatar"
+                  render={(props) => (
+                    <CurrencyInput
+                      {...props}
+                      onChangeValue={(value: number) => {
+                        setStockAmountToRedeem(stock, value);
+                      }}
+                      value={getStockRedemptionValue(stock) ?? 0}
+                      unit="R$ "
+                      delimiter="."
+                      separator=","
+                      precision={2}
+                    />
+                  )}
+                />
+                {hasErrorOnStock(stock) && (
+                  <HelperText type="error">{getStockError(stock)}</HelperText>
                 )}
-              />
-              {hasErrorOnStock(stock) && (
-                <HelperText type="error">{getStockError(stock)}</HelperText>
-              )}
-            </View>
-          ))}
-        </View>
-        <LabelValueItem
-          style={styles.mb24}
-          label="Valor total a resgatar"
-          value={<CurrencyText withSymbol>{totalValue}</CurrencyText>}
-        />
-      </ScrollView>
-      <Button
-        uppercase
-        onPress={handleConfirmRedeemPress}
-        style={[
-          styles.confirmRedeemButton,
-          {
-            bottom: insets.bottom,
-          },
-        ]}
-        labelStyle={{
-          color: colors.accent,
-          ...styles.confirmRedeemButtonLabel,
-        }}
-        mode="text"
-        accessibilityComponentType
-        accessibilityTraits>
-        Confirmar Resgate
-      </Button>
-      <Dialog
-        visible={!!successMessage}
-        title="Resgate Efetuado!"
-        actionText="Novo resgate"
-        message={successMessage}
-        onDismiss={() => setSuccessMessage(null)}
-      />
-      <Dialog
-        visible={!!errorMessage}
-        title="Erro"
-        type="error"
-        actionText="OK"
-        message={errorMessage}
-        onDismiss={() => setErrorMessage(null)}
-      />
-    </View>
+              </View>
+            ))}
+          </View>
+          <LabelValueItem
+            style={styles.mb24}
+            label="Valor total a resgatar"
+            value={<CurrencyText withSymbol>{totalValue}</CurrencyText>}
+          />
+        </ScrollView>
+
+        <Button
+          uppercase
+          onPress={handleConfirmRedeemPress}
+          style={[
+            styles.confirmRedeemButton,
+            {
+              bottom: insets.bottom,
+            },
+          ]}
+          labelStyle={{
+            color: colors.accent,
+            ...styles.confirmRedeemButtonLabel,
+          }}
+          mode="text"
+          accessibilityComponentType
+          accessibilityTraits>
+          Confirmar Resgate
+        </Button>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

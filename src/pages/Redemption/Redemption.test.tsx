@@ -4,6 +4,19 @@ import { render } from '@testing-library/react-native';
 
 import { Investment } from '../../api/entities';
 import Redemption from './Redemption';
+import * as safeArea from 'react-native-safe-area-context';
+
+jest.mock('react-native-safe-area-context');
+
+const useSafeAreaInsetsMock = safeArea.useSafeAreaInsets as jest.MockedFunction<
+  typeof safeArea.useSafeAreaInsets
+>;
+useSafeAreaInsetsMock.mockReturnValue({
+  bottom: 10,
+  left: 10,
+  right: 10,
+  top: 10,
+});
 
 it('should render the investment name and total balance', () => {
   const investment: Investment = {
