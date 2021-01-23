@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, HelperText, TextInput, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CurrencyInput from 'react-native-currency-input';
 
 import { RouteProp } from '@react-navigation/native';
 
@@ -27,6 +28,7 @@ function Redemption({ route }: Props) {
     setStockAmountToRedeem,
     totalValue,
     redeem,
+    getStockRedemptionValue,
   } = useRedemption();
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -36,7 +38,7 @@ function Redemption({ route }: Props) {
   const { colors } = useTheme();
 
   const handleConfirmRedeemPress = useCallback(() => {
-    const redeemedOrError = redeem();
+    const redeemedOrError = redeem(investment);
 
     if (redeemedOrError.isLeft()) {
       setErrorMessage(redeemedOrError.value.message);
@@ -44,7 +46,7 @@ function Redemption({ route }: Props) {
     }
 
     setSuccessMessage(redeemedOrError.value.message);
-  }, [redeem]);
+  }, [investment, redeem]);
 
   return (
     <View
@@ -77,16 +79,23 @@ function Redemption({ route }: Props) {
                     primary: colors.accent,
                   },
                 }}
-                onChangeText={(text) => {
-                  setStockAmountToRedeem(
-                    stock,
-                    text.length === 0 ? 0 : parseFloat(text),
-                  );
-                }}
                 error={hasErrorOnStock(stock)}
                 accessibilityComponentType
                 accessibilityTraits
                 label="Valor a resgatar"
+                render={(props) => (
+                  <CurrencyInput
+                    {...props}
+                    onChangeValue={(value: number) => {
+                      setStockAmountToRedeem(stock, value);
+                    }}
+                    value={getStockRedemptionValue(stock) ?? 0}
+                    unit="R$ "
+                    delimiter="."
+                    separator=","
+                    precision={2}
+                  />
+                )}
               />
               {hasErrorOnStock(stock) && (
                 <HelperText type="error">{getStockError(stock)}</HelperText>

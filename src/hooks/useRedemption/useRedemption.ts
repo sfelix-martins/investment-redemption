@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { Stock } from '../../api/entities';
+import { Investment, Stock } from '../../api/entities';
 import formatCurrency from '../../utils/formatCurrency/formatCurrency';
 import { Either, left, right } from '../../utils/logic/Either';
 
@@ -28,6 +28,11 @@ class EmptyAmountToReedemError extends Error {
     super('Preencha os valores a resgatar!');
   }
 }
+class ValueToRedeemGreaterThanAvailableError extends Error {
+  constructor() {
+    super('O valor a resgatar não pode ser maior que o saldo disponível');
+  }
+}
 
 type SuccessResponse = {
   message: string;
@@ -36,10 +41,15 @@ type SuccessResponse = {
 interface UseRedemptionApi {
   setStockAmountToRedeem(stock: Stock, value: number): void;
   totalValue: number;
-  stockRedemptions: StockRedemptions;
+  getStockRedemptionValue(stock: Stock): number | undefined;
   hasErrorOnStock(stock: Stock): boolean;
   getStockError(stock: Stock): ErrorMessage;
-  redeem(): Either<EmptyAmountToReedemError, SuccessResponse>;
+  redeem(
+    investment: Investment,
+  ): Either<
+    EmptyAmountToReedemError | ValueToRedeemGreaterThanAvailableError,
+    SuccessResponse
+  >;
   clear(): void;
 }
 
@@ -84,13 +94,6 @@ export default function useRedemption(): UseRedemptionApi {
     }));
   }, []);
 
-  const removeStockRemdemptionValue = useCallback((stock: Stock) => {
-    setStockRedemptions((existentStockRedemptions) => {
-      delete existentStockRedemptions[stock.id];
-      return { ...existentStockRedemptions };
-    });
-  }, []);
-
   const getStockError = useCallback((stock: Stock) => errors[stock.id], [
     errors,
   ]);
@@ -104,43 +107,52 @@ export default function useRedemption(): UseRedemptionApi {
     (stock: Stock, value: number) => {
       if (value > stock.balance) {
         addValueGreaterThanBalanceError(stock);
-        removeStockRemdemptionValue(stock);
-        return;
+      } else {
+        removeValueGreaterThanBalanceError(stock);
       }
 
-      removeValueGreaterThanBalanceError(stock);
       addStockRedemptionValue(stock, value);
     },
     [
       addStockRedemptionValue,
       addValueGreaterThanBalanceError,
-      removeStockRemdemptionValue,
       removeValueGreaterThanBalanceError,
     ],
   );
 
-  const redeem = useCallback((): Either<
-    EmptyAmountToReedemError,
-    SuccessResponse
-  > => {
-    if (totalValue === 0) {
-      return left(new EmptyAmountToReedemError());
-    }
+  const redeem = useCallback(
+    (
+      investment: Investment,
+    ): Either<EmptyAmountToReedemError, SuccessResponse> => {
+      if (totalValue > investment.totalBalance) {
+        return left(new ValueToRedeemGreaterThanAvailableError());
+      }
 
-    return right({
-      message: 'O valor solicitado está em sua conta em até 5 dias úteis',
-    });
-  }, [totalValue]);
+      if (totalValue === 0) {
+        return left(new EmptyAmountToReedemError());
+      }
+
+      return right({
+        message: 'O valor solicitado está em sua conta em até 5 dias úteis',
+      });
+    },
+    [totalValue],
+  );
 
   const clear = useCallback(() => {
     setErrors({});
     setStockRedemptions({});
   }, []);
 
+  const getStockRedemptionValue = useCallback(
+    (stock: Stock) => stockRedemptions[stock.id]?.value,
+    [stockRedemptions],
+  );
+
   return {
-    setStockAmountToRedeem,
-    stockRedemptions,
     totalValue,
+    setStockAmountToRedeem,
+    getStockRedemptionValue,
     hasErrorOnStock,
     getStockError,
     redeem,
