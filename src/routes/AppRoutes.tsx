@@ -4,10 +4,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import Investments from '../pages/Investments/Investments';
 import Redemption from '../pages/Redemption/Redemption';
+import { Investment } from '../api/entities';
 
 export type RootStackParamList = {
   Investments: undefined;
-  Redemption: undefined;
+  Redemption: { investment: Investment };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();

@@ -22,30 +22,28 @@ function Investments({ navigation }: Props) {
   const { data: investments } = useInvestments();
 
   return (
-    <View>
-      <ScrollView>
-        {/* Header */}
-        <View style={styles.header}>
-          <Title>Investimentos</Title>
-          <Title>R$</Title>
-        </View>
-        {/* Investments List */}
-        {investments.map((investment) => (
-          <TouchableOpacity key={investment.name}>
-            <List.Item
-              style={styles.invesmentItemContainer}
-              accessibilityComponentType
-              accessibilityTraits
-              title={investment.name}
-              description={investment.goal}
-              right={() => (
-                <CurrencyText>{investment.totalBalance}</CurrencyText>
-              )}
-            />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
+    <ScrollView>
+      {/* Header */}
+      <View style={styles.header}>
+        <Title>Investimentos</Title>
+        <Title>R$</Title>
+      </View>
+      {/* Investments List */}
+      {investments.map((investment) => (
+        <TouchableOpacity
+          key={investment.name}
+          onPress={() => navigation.navigate('Redemption', { investment })}>
+          <List.Item
+            style={styles.invesmentItemContainer}
+            accessibilityComponentType
+            accessibilityTraits
+            title={investment.name}
+            description={investment.goal}
+            right={() => <CurrencyText>{investment.totalBalance}</CurrencyText>}
+          />
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 }
 

@@ -1,5 +1,7 @@
-import axios from 'axios';
-import { Invesment, Stock } from '../entities';
+import {
+  InvestmentWithoutStockBalanceDefined,
+  StockWithoutBalanceDefined,
+} from '../entities';
 
 interface Acao {
   id: string;
@@ -24,7 +26,9 @@ interface FetchInvestmentsResponse {
   };
 }
 
-const convertFromResponseStockToStockEntity = (from: Acao): Stock => ({
+const convertFromResponseStockToStockEntity = (
+  from: Acao,
+): StockWithoutBalanceDefined => ({
   id: from.id,
   symbol: from.nome,
   percentage: from.percentual,
@@ -32,7 +36,7 @@ const convertFromResponseStockToStockEntity = (from: Acao): Stock => ({
 
 const convertFromResponseInvestmentToInvestmentEntity = (
   from: ListaInvestimento,
-): Invesment => ({
+): InvestmentWithoutStockBalanceDefined => ({
   name: from.nome,
   goal: from.objetivo,
   totalBalance: from.saldoTotalDisponivel,
@@ -40,7 +44,9 @@ const convertFromResponseInvestmentToInvestmentEntity = (
   stocks: from.acoes.map(convertFromResponseStockToStockEntity),
 });
 
-export const fetchInvestments = async (): Promise<Invesment[]> => {
+export const fetchInvestments = async (): Promise<
+  InvestmentWithoutStockBalanceDefined[]
+> => {
   // const { data } = await axios.get<FetchInvestmentsResponse>(
   //   'http://www.mocky.io/v2/5e76797e2f0000f057986099',
   // );
@@ -167,7 +173,7 @@ export const fetchInvestments = async (): Promise<Invesment[]> => {
     },
   };
 
-  const investments: Invesment[] = data.response.data.listaInvestimentos.map(
+  const investments: InvestmentWithoutStockBalanceDefined[] = data.response.data.listaInvestimentos.map(
     convertFromResponseInvestmentToInvestmentEntity,
   );
 

@@ -1,19 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Text, TextProps } from 'react-native';
+
+import formatCurrency from '../../utils/formatCurrency/formatCurrency';
 
 type Props = TextProps & {
   children: number;
   withSymbol?: boolean;
-};
-
-const withSymbolOptions = {
-  style: 'currency',
-  currency: 'BRL',
-  currencyDisplay: 'symbol',
-};
-
-const withoutSymbolOptions = {
-  minimumFractionDigits: 2,
 };
 
 export default function CurrencyText({
@@ -21,11 +13,9 @@ export default function CurrencyText({
   withSymbol = false,
   ...rest
 }: Props) {
-  const options = withSymbol ? withSymbolOptions : withoutSymbolOptions;
-
   return (
     <Text accessibilityRole="text" {...rest}>
-      {children.toLocaleString('pt-BR', options)}
+      {formatCurrency(children, { withSymbol })}
     </Text>
   );
 }
