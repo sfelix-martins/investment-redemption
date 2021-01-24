@@ -2,8 +2,12 @@ import { act } from 'react-test-renderer';
 
 import { renderHook } from '@testing-library/react-hooks';
 
+import { Investment, Stock } from '../../api/entities';
+import {
+  EmptyAmountToReedemError,
+  ValueToRedeemGreaterThanAvailableError,
+} from './errors';
 import useRedemption from './useRedemption';
-import { Stock } from '../../api/entities';
 
 describe('setStockamountToRedeem', () => {
   it('should add a stock redemption value updating total value when not exists', () => {
@@ -192,5 +196,71 @@ describe('setStockamountToRedeem', () => {
       },
     });
     expect(result.current.totalValue).toBe(newValidamountToRedeem);
+  });
+});
+
+describe('redeem', () => {
+  it('should return an error if total amount to redeem is greater than investment available balance', () => {
+    const { result } = renderHook(() => useRedemption());
+
+    const investment: Investment = {
+      totalBalance: 100,
+    } as any;
+    const stock: Stock = {
+      id: '1234',
+      balance: 100,
+      symbol: 'ITSA4',
+      percentage: 0,
+    };
+    const amountToRedeem = 101;
+
+    act(() => {
+      result.current.setStockAmountToRedeem(stock, amountToRedeem);
+    });
+
+    const redeemedOrError = result.current.redeem(investment);
+
+    expect(redeemedOrError.isLeft()).toBe(true);
+    expect(redeemedOrError.value).toBeInstanceOf(
+      ValueToRedeemGreaterThanAvailableError,
+    );
+  });
+
+  it('should return an error if total amount to redeem is empty', () => {
+    const { result } = renderHook(() => useRedemption());
+
+    const investment: Investment = {
+      totalBalance: 100,
+    } as any;
+
+    const redeemedOrError = result.current.redeem(investment);
+
+    expect(redeemedOrError.isLeft()).toBe(true);
+    expect(redeemedOrError.value).toBeInstanceOf(EmptyAmountToReedemError);
+  });
+
+  it('should return a success when all is OK', () => {
+    const { result } = renderHook(() => useRedemption());
+
+    const investment: Investment = {
+      totalBalance: 100,
+    } as any;
+
+    const stock: Stock = {
+      id: '1234',
+      balance: 100,
+      symbol: 'ITSA4',
+      percentage: 0,
+    };
+    const amountToRedeem = 90;
+
+    act(() => {
+      result.current.setStockAmountToRedeem(stock, amountToRedeem);
+    });
+
+    const redeemedOrError = result.current.redeem(investment);
+
+    expect(redeemedOrError.isRight()).toBe(true);
+    expect(redeemedOrError.value.message).toEqual(expect.any(String));
   });
 });

@@ -1,18 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Investment, Stock } from '../../api/entities';
-import formatCurrency from '../../utils/formatCurrency/formatCurrency';
 import { Either, left, right } from '../../utils/logic/Either';
 import {
   EmptyAmountToReedemError,
+  mountMaxValueErrorMessage,
   ValueToRedeemGreaterThanAvailableError,
 } from './errors';
-
-const mountMaxValueErrorMessage = (max: number) => {
-  return `Valor não pode ser maior que ${formatCurrency(max, {
-    withSymbol: true,
-  })}`;
-};
 
 type ErrorMessage = string;
 
@@ -44,7 +38,6 @@ export interface UseRedemptionApi {
     EmptyAmountToReedemError | ValueToRedeemGreaterThanAvailableError,
     SuccessResponse
   >;
-  clear(): void;
 }
 
 export default function useRedemption(): UseRedemptionApi {
@@ -133,11 +126,6 @@ export default function useRedemption(): UseRedemptionApi {
     [totalValue],
   );
 
-  const clear = useCallback(() => {
-    setErrors({});
-    setStockRedemptions({});
-  }, []);
-
   const getStockRedemptionValue = useCallback(
     (stock: Stock) => stockRedemptions[stock.id]?.value,
     [stockRedemptions],
@@ -151,6 +139,5 @@ export default function useRedemption(): UseRedemptionApi {
     hasErrorOnStock,
     getStockError,
     redeem,
-    clear,
   };
 }
