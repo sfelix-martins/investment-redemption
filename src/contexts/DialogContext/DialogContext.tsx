@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useState } from 'react';
 
 import Dialog from '../../components/Dialog/Dialog';
 
@@ -8,7 +8,7 @@ interface OpenDialogOptions {
   actionText?: string;
 }
 
-interface DialogContextData {
+export interface DialogContextData {
   showSuccessDialog(options: OpenDialogOptions): void;
   showErrorDialog(options: OpenDialogOptions): void;
 }
@@ -19,7 +19,7 @@ const DialogProvider: React.FC = ({ children }) => {
   const [actionText, setActionText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<'success' | 'error'>('success');
+  const [type, setType] = useState<'success' | 'error' | undefined>(undefined);
   const [visible, setVisible] = useState(false);
 
   const handleDialogDismiss = useCallback(() => {
@@ -27,27 +27,28 @@ const DialogProvider: React.FC = ({ children }) => {
   }, []);
 
   const showDialog = useCallback(
-    (options: OpenDialogOptions) => {
+    (options: OpenDialogOptions, dialogType: 'success' | 'error') => {
+      setType(dialogType);
       setActionText(options.actionText ?? 'OK');
       setMessage(options.message);
-      setTitle(options.title ?? (type === 'success' ? 'Sucesso' : 'Erro'));
+      setTitle(
+        options.title ?? (dialogType === 'success' ? 'Sucesso' : 'Erro'),
+      );
       setVisible(true);
     },
-    [type],
+    [],
   );
 
   const showSuccessDialog = useCallback(
     (options: OpenDialogOptions) => {
-      setType('success');
-      showDialog(options);
+      showDialog(options, 'success');
     },
     [showDialog],
   );
 
   const showErrorDialog = useCallback(
     (options: OpenDialogOptions) => {
-      setType('error');
-      showDialog(options);
+      showDialog(options, 'error');
     },
     [showDialog],
   );
@@ -67,14 +68,4 @@ const DialogProvider: React.FC = ({ children }) => {
   );
 };
 
-function useDialog(): DialogContextData {
-  const context = useContext(DialogContext);
-
-  if (!context) {
-    throw new Error('useDialog must be used within an DialogProvider');
-  }
-
-  return context;
-}
-
-export { DialogProvider, useDialog };
+export { DialogProvider, DialogContext };

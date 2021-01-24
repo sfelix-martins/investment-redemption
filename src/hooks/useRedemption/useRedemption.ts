@@ -3,6 +3,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Investment, Stock } from '../../api/entities';
 import formatCurrency from '../../utils/formatCurrency/formatCurrency';
 import { Either, left, right } from '../../utils/logic/Either';
+import {
+  EmptyAmountToReedemError,
+  ValueToRedeemGreaterThanAvailableError,
+} from './errors';
 
 const mountMaxValueErrorMessage = (max: number) => {
   return `Valor não pode ser maior que ${formatCurrency(max, {
@@ -23,22 +27,11 @@ interface StockRedemptions {
   };
 }
 
-class EmptyAmountToReedemError extends Error {
-  constructor() {
-    super('Preencha os valores a resgatar!');
-  }
-}
-class ValueToRedeemGreaterThanAvailableError extends Error {
-  constructor() {
-    super('O valor a resgatar não pode ser maior que o saldo disponível');
-  }
-}
-
 type SuccessResponse = {
   message: string;
 };
 
-interface UseRedemptionApi {
+export interface UseRedemptionApi {
   setStockAmountToRedeem(stock: Stock, value: number): void;
   totalValue: number;
   getStockRedemptionValue(stock: Stock): number | undefined;

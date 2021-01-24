@@ -10,7 +10,7 @@ import { RouteProp } from '@react-navigation/native';
 import CurrencyText from '../../components/CurrencyText/CurrencyText';
 import LabelValueItem from '../../components/LabelValueItem/LabelValueItem';
 import SectionTitle from '../../components/SectionTitle/SectionTitle';
-import { useDialog } from '../../contexts/DialogContext/DialogContext';
+import useDialog from '../../hooks/useDialog/useDialog';
 import useRedemption from '../../hooks/useRedemption/useRedemption';
 import { RootStackParamList } from '../../routes/AppRoutes';
 
@@ -30,7 +30,6 @@ function Redemption({ route }: Props) {
     redeem,
     getStockRedemptionValue,
   } = useRedemption();
-
   const { showErrorDialog, showSuccessDialog } = useDialog();
 
   const insets = useSafeAreaInsets();
@@ -40,10 +39,9 @@ function Redemption({ route }: Props) {
     const redeemedOrError = redeem(investment);
 
     if (redeemedOrError.isLeft()) {
-      showErrorDialog({
+      return showErrorDialog({
         message: redeemedOrError.value.message,
       });
-      return;
     }
 
     showSuccessDialog({
@@ -95,6 +93,7 @@ function Redemption({ route }: Props) {
                   error={hasErrorOnStock(stock)}
                   accessibilityComponentType
                   accessibilityTraits
+                  accessibilityLabel="Valor a resgatar"
                   label="Valor a resgatar"
                   render={(props) => (
                     <CurrencyInput
@@ -111,7 +110,9 @@ function Redemption({ route }: Props) {
                   )}
                 />
                 {hasErrorOnStock(stock) && (
-                  <HelperText type="error">{getStockError(stock)}</HelperText>
+                  <HelperText accessibilityRole="alert" type="error">
+                    {getStockError(stock)}
+                  </HelperText>
                 )}
               </View>
             ))}
@@ -124,6 +125,7 @@ function Redemption({ route }: Props) {
         </ScrollView>
 
         <Button
+          accessibilityRole="button"
           uppercase
           onPress={handleConfirmRedeemPress}
           style={[
