@@ -6,7 +6,7 @@ import {
   InvestmentWithoutStockBalanceDefined,
   StockWithoutBalanceDefined,
 } from '../../api/entities';
-import { useInvestmentsSWR } from './useInvestmentsSWR';
+import useInvestmentsSWR from './useInvestmentsSWR';
 
 interface UseInvestmentsApi {
   data: Investment[];

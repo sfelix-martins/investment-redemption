@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { InvestmentWithoutStockBalanceDefined } from '../../api/entities';
 import { fetchInvestments } from '../../api/investments/fetchInvestments';
 
-export function useInvestmentsSWR() {
+export default function useInvestmentsSWR() {
   const { data, error } = useSWR<
     InvestmentWithoutStockBalanceDefined[],
     AxiosError
