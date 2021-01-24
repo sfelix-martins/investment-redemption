@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { AxiosError } from 'axios';
+import { useCallback } from 'react';
 
 import {
   Investment,
@@ -10,7 +11,7 @@ import { useInvestmentsSWR } from './useInvestmentsSWR';
 interface UseInvestmentsApi {
   data: Investment[];
   isLoading: boolean;
-  error: unknown;
+  error?: AxiosError;
 }
 
 function calculateStockBalance(
@@ -30,8 +31,6 @@ function getStocksWithBalanceDefined(
 }
 
 export function useInvestments(): UseInvestmentsApi {
-  const [investments, setInvestments] = useState<Investment[]>([]);
-
   const { data, isLoading, error } = useInvestmentsSWR();
 
   const calculateInvestmentStocksBalance = useCallback(() => {
@@ -41,13 +40,8 @@ export function useInvestments(): UseInvestmentsApi {
     }));
   }, [data]);
 
-  useEffect(() => {
-    const investmentsWithStocksBalanceDefined = calculateInvestmentStocksBalance();
-    setInvestments(investmentsWithStocksBalanceDefined);
-  }, [calculateInvestmentStocksBalance]);
-
   return {
-    data: investments,
+    data: calculateInvestmentStocksBalance(),
     isLoading,
     error,
   };
