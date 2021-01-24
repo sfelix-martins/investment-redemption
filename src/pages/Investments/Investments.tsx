@@ -36,9 +36,18 @@ function Investments({ navigation }: Props) {
     [colors.disabled, colors.white],
   );
 
+  const handlePressInvestment = useCallback(
+    (investment: Investment) => {
+      if (!investment.inGracePeriod) {
+        navigation.navigate('Redemption', { investment });
+      }
+    },
+    [navigation],
+  );
+
   if (error) {
     return (
-      <View style={styles.error}>
+      <View accessibilityRole="alert" style={styles.error}>
         <Headline style={styles.errorText}>
           Algo deu errado, tente novamente mais tarde!
         </Headline>
@@ -69,9 +78,10 @@ function Investments({ navigation }: Props) {
       {/* Investments List */}
       {investments.map((investment) => (
         <TouchableOpacity
+          accessibilityRole="button"
           disabled={investment.inGracePeriod}
           key={investment.name}
-          onPress={() => navigation.navigate('Redemption', { investment })}>
+          onPress={() => handlePressInvestment(investment)}>
           <List.Item
             style={[
               styles.invesmentItemContainer,
@@ -79,6 +89,9 @@ function Investments({ navigation }: Props) {
                 backgroundColor: getInvestmentItemBgColor(investment),
               },
             ]}
+            accessibilityState={{
+              disabled: investment.inGracePeriod,
+            }}
             accessibilityComponentType
             accessibilityTraits
             title={investment.name}

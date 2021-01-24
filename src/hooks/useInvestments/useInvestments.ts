@@ -8,7 +8,7 @@ import {
 } from '../../api/entities';
 import useInvestmentsSWR from './useInvestmentsSWR';
 
-interface UseInvestmentsApi {
+export interface UseInvestmentsApi {
   data: Investment[];
   isLoading: boolean;
   error?: AxiosError;
