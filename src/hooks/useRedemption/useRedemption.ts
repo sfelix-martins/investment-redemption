@@ -32,9 +32,7 @@ export interface UseRedemptionApi {
   hasErrorOnStock(stock: Stock): boolean;
   getStockError(stock: Stock): ErrorMessage;
   stockRedemptions: StockRedemptions;
-  redeem(
-    investment: Investment,
-  ): Either<
+  redeem(): Either<
     EmptyAmountToReedemError | ValueToRedeemGreaterThanAvailableError,
     SuccessResponse
   >;
@@ -107,24 +105,26 @@ export default function useRedemption(): UseRedemptionApi {
     ],
   );
 
-  const redeem = useCallback(
-    (
-      investment: Investment,
-    ): Either<EmptyAmountToReedemError, SuccessResponse> => {
-      if (totalValue > investment.totalBalance) {
-        return left(new ValueToRedeemGreaterThanAvailableError());
-      }
+  const hasSomeStockAmountToRedeemWithError = useCallback(() => {
+    return Object.keys(errors).length > 0;
+  }, [errors]);
 
-      if (totalValue === 0) {
-        return left(new EmptyAmountToReedemError());
-      }
+  const redeem = useCallback((): Either<
+    EmptyAmountToReedemError,
+    SuccessResponse
+  > => {
+    if (hasSomeStockAmountToRedeemWithError()) {
+      return left(new ValueToRedeemGreaterThanAvailableError());
+    }
 
-      return right({
-        message: 'O valor solicitado está em sua conta em até 5 dias úteis',
-      });
-    },
-    [totalValue],
-  );
+    if (totalValue === 0) {
+      return left(new EmptyAmountToReedemError());
+    }
+
+    return right({
+      message: 'O valor solicitado está em sua conta em até 5 dias úteis',
+    });
+  }, [hasSomeStockAmountToRedeemWithError, totalValue]);
 
   const getStockRedemptionValue = useCallback(
     (stock: Stock) => stockRedemptions[stock.id]?.value,

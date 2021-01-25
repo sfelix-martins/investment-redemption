@@ -36,7 +36,7 @@ function Redemption({ route }: Props) {
   const { colors } = useTheme();
 
   const handleConfirmRedeemPress = useCallback(() => {
-    const redeemedOrError = redeem(investment);
+    const redeemedOrError = redeem();
 
     if (redeemedOrError.isLeft()) {
       return showErrorDialog({
@@ -49,7 +49,7 @@ function Redemption({ route }: Props) {
       actionText: 'Novo resgate',
       title: 'Resgate Efetuado!',
     });
-  }, [investment, redeem, showErrorDialog, showSuccessDialog]);
+  }, [redeem, showErrorDialog, showSuccessDialog]);
 
   return (
     <KeyboardAvoidingView

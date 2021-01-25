@@ -2,7 +2,7 @@ import { act } from 'react-test-renderer';
 
 import { renderHook } from '@testing-library/react-hooks';
 
-import { Investment, Stock } from '../../api/entities';
+import { Stock } from '../../api/entities';
 import {
   EmptyAmountToReedemError,
   ValueToRedeemGreaterThanAvailableError,
@@ -200,12 +200,9 @@ describe('setStockamountToRedeem', () => {
 });
 
 describe('redeem', () => {
-  it('should return an error if total amount to redeem is greater than investment available balance', () => {
+  it('should return an error if one amount to redeem is greater than stock available balance', () => {
     const { result } = renderHook(() => useRedemption());
 
-    const investment: Investment = {
-      totalBalance: 100,
-    } as any;
     const stock: Stock = {
       id: '1234',
       balance: 100,
@@ -218,7 +215,7 @@ describe('redeem', () => {
       result.current.setStockAmountToRedeem(stock, amountToRedeem);
     });
 
-    const redeemedOrError = result.current.redeem(investment);
+    const redeemedOrError = result.current.redeem();
 
     expect(redeemedOrError.isLeft()).toBe(true);
     expect(redeemedOrError.value).toBeInstanceOf(
@@ -229,11 +226,7 @@ describe('redeem', () => {
   it('should return an error if total amount to redeem is empty', () => {
     const { result } = renderHook(() => useRedemption());
 
-    const investment: Investment = {
-      totalBalance: 100,
-    } as any;
-
-    const redeemedOrError = result.current.redeem(investment);
+    const redeemedOrError = result.current.redeem();
 
     expect(redeemedOrError.isLeft()).toBe(true);
     expect(redeemedOrError.value).toBeInstanceOf(EmptyAmountToReedemError);
@@ -241,10 +234,6 @@ describe('redeem', () => {
 
   it('should return a success when all is OK', () => {
     const { result } = renderHook(() => useRedemption());
-
-    const investment: Investment = {
-      totalBalance: 100,
-    } as any;
 
     const stock: Stock = {
       id: '1234',
@@ -258,7 +247,7 @@ describe('redeem', () => {
       result.current.setStockAmountToRedeem(stock, amountToRedeem);
     });
 
-    const redeemedOrError = result.current.redeem(investment);
+    const redeemedOrError = result.current.redeem();
 
     expect(redeemedOrError.isRight()).toBe(true);
     expect(redeemedOrError.value.message).toEqual(expect.any(String));
